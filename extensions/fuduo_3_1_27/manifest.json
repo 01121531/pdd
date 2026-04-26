@@ -1,0 +1,122 @@
+{
+  "manifest_version": 3,
+  "name": "富多工具",
+  "version": "3.1.27",
+  "description": "富多供应链一站式运营助手，集商品管理、智能推广、营销活动与优惠券于一体，让店铺运营更高效。",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAn+3+U0HWL8SO4VHsHX/Lfr+Llk/Eh3soq/FKtekazwh3JtYu6KnNg1Xln6KZ7sVYRGZQrbwl5I9GO7kKqwTNTGQHSElnEFzue9hWIiosYqCmHWDmkNgQXlSwjLQ/MjE0uSoptb1VRknp6fwkGmpM+cni9JfYkRvLXYHj+sO7T6lo2zaXIGUni2V59F1pcHs8afCV51v7QhgYImwAqI332kWDI7TfjHWRm5IYdmB8CEk0ygnSfvEAIo5EEBd0RekuUbsc9eg/7uJR1gUeITK51xomrT34ifUk4ZlqV524y3qM01ZEOSePSukoJ+XKWdIINmWO6NvqN7JIzbhopu1uIQIDAQAB",
+  "permissions": [
+    "activeTab",
+    "storage",
+    "unlimitedStorage",
+    "cookies",
+    "alarms",
+    "tabs"
+  ],
+  "host_permissions": [
+    "https://mms.pinduoduo.com/*",
+    "https://yingxiao.pinduoduo.com/*",
+    "https://fuduo.zzvvaa.com/*",
+    "https://yezishu.zzvvaa.com/*",
+    "*://*.yangkeduo.com/*",
+    "*://mobile.pinduoduo.com/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "logo.png",
+      "32": "logo.png",
+      "48": "logo.png",
+      "128": "logo.png"
+    }
+  },
+  "icons": {
+    "16": "logo.png",
+    "32": "logo.png",
+    "48": "logo.png",
+    "128": "logo.png"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://mms.pinduoduo.com/*"
+      ],
+      "exclude_matches": [
+        "https://mms.pinduoduo.com/login*",
+        "https://mms.pinduoduo.com/passport*",
+        "https://mms.pinduoduo.com/auth*"
+      ],
+      "js": [
+        "inject.js"
+      ],
+      "run_at": "document_start",
+      "world": "MAIN",
+      "all_frames": false
+    },
+    {
+      "matches": [
+        "https://mms.pinduoduo.com/*"
+      ],
+      "exclude_matches": [
+        "https://mms.pinduoduo.com/login*",
+        "https://mms.pinduoduo.com/passport*",
+        "https://mms.pinduoduo.com/auth*"
+      ],
+      "js": [
+        "getAntiContent.js",
+        "content.js"
+      ],
+      "run_at": "document_idle",
+      "all_frames": false
+    },
+    {
+      "matches": [
+        "https://yingxiao.pinduoduo.com/*"
+      ],
+      "js": [
+        "inject.js"
+      ],
+      "run_at": "document_start",
+      "world": "MAIN",
+      "all_frames": false
+    },
+    {
+      "matches": [
+        "https://yingxiao.pinduoduo.com/*"
+      ],
+      "js": [
+        "getAntiContent.js",
+        "content.js"
+      ],
+      "run_at": "document_idle",
+      "all_frames": false
+    },
+    {
+      "matches": [
+        "*://mobile.pinduoduo.com/goods*.html*",
+        "*://*.yangkeduo.com/goods*.html*",
+        "*://yangkeduo.com/goods*.html*"
+      ],
+      "js": [
+        "collection.js"
+      ],
+      "run_at": "document_idle",
+      "all_frames": false
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "logo.png"
+      ],
+      "matches": [
+        "https://mms.pinduoduo.com/*",
+        "https://yingxiao.pinduoduo.com/*",
+        "*://*.yangkeduo.com/*",
+        "*://mobile.pinduoduo.com/*"
+      ]
+    }
+  ]
+}

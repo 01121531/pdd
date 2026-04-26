@@ -1,0 +1,28 @@
+# Local private data
+data/
+chrome_user_data/
+pdd_cookies.json
+runs/
+uploads/
+web_state.json
+app_config.json
+.claude/
+
+# Generated results and diagnostics
+pdd_review_results.json
+pdd_restore_results.json
+pdd-console-*.png
+.playwright-mcp/
+__pycache__/
+*.pyc
+
+# Local input/sample data
+*.xlsx
+*.jpg
+*.jpeg
+
+# Legacy duplicate extension directory; use extensions/fuduo_3_1_27
+富多插件3.1.27/
+
+# Bundled browser runtime noise
+browsers/**/debug.log

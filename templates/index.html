@@ -1,0 +1,777 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>拼多多本机自动化控制台</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f4f6f8;
+      --panel: #ffffff;
+      --panel-soft: #f8fafc;
+      --line: #d9dee7;
+      --text: #18212f;
+      --muted: #667085;
+      --blue: #1d4ed8;
+      --blue-soft: #eef4ff;
+      --green: #16803c;
+      --green-soft: #edf9f0;
+      --red: #c1352b;
+      --red-soft: #fff1ef;
+      --amber: #9a5a00;
+      --amber-soft: #fff7e6;
+      --shadow: 0 12px 30px rgba(15, 23, 42, .07);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Microsoft YaHei", "Segoe UI", Arial, sans-serif;
+      font-size: 14px;
+      letter-spacing: 0;
+    }
+    header {
+      background: #111827;
+      color: #fff;
+      border-bottom: 1px solid #202938;
+    }
+    .header-inner {
+      width: min(1360px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 18px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    h1 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 700;
+    }
+    .header-subtitle {
+      margin-top: 4px;
+      color: #aeb8c7;
+      font-size: 13px;
+    }
+    main {
+      width: min(1360px, calc(100vw - 32px));
+      margin: 18px auto 36px;
+      display: grid;
+      gap: 16px;
+    }
+    section,
+    .status-card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+    section { padding: 16px; }
+    h2 {
+      margin: 0 0 14px;
+      font-size: 16px;
+    }
+    h3 {
+      margin: 0;
+      font-size: 14px;
+    }
+    .top-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.45fr 1fr;
+      gap: 12px;
+    }
+    .status-card {
+      padding: 14px;
+      display: grid;
+      gap: 10px;
+      min-height: 126px;
+    }
+    .card-head,
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .meta-grid {
+      display: grid;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+    .meta-grid span {
+      overflow-wrap: anywhere;
+    }
+    .main-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(430px, .9fr);
+      gap: 16px;
+      align-items: start;
+    }
+    .form-stack,
+    .side-stack {
+      display: grid;
+      gap: 16px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    label {
+      display: grid;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 12px;
+      min-width: 0;
+    }
+    input,
+    select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 9px 10px;
+      color: var(--text);
+      background: #fff;
+      font: inherit;
+      min-height: 38px;
+    }
+    input[type="file"] { padding: 7px; }
+    input:focus,
+    select:focus,
+    button:focus,
+    a.button:focus {
+      outline: 2px solid #bfdbfe;
+      outline-offset: 1px;
+    }
+    .field-stack {
+      display: grid;
+      gap: 8px;
+    }
+    .static-field {
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 9px 10px;
+      color: var(--text);
+      background: var(--panel-soft);
+      line-height: 1.4;
+      overflow-wrap: anywhere;
+      min-height: 38px;
+    }
+    .hint,
+    .notice {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+    .row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+    button,
+    a.button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      padding: 8px 12px;
+      color: #fff;
+      background: var(--blue);
+      font: inherit;
+      text-decoration: none;
+      cursor: pointer;
+      min-height: 36px;
+      white-space: nowrap;
+    }
+    button.secondary,
+    a.button.secondary {
+      background: #fff;
+      color: var(--text);
+      border-color: var(--line);
+    }
+    button.danger,
+    a.button.danger {
+      background: var(--red-soft);
+      color: var(--red);
+      border-color: #f0aaa2;
+    }
+    button:disabled {
+      cursor: not-allowed;
+      opacity: .62;
+    }
+    .status {
+      display: inline-flex;
+      align-items: center;
+      min-height: 26px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      font-size: 12px;
+      color: var(--muted);
+      background: #fff;
+      white-space: nowrap;
+    }
+    .ok { color: var(--green); border-color: #9ed8b0; background: var(--green-soft); }
+    .bad { color: var(--red); border-color: #f0aaa2; background: var(--red-soft); }
+    .warn { color: var(--amber); border-color: #eac27e; background: var(--amber-soft); }
+    .summary-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .summary-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      min-height: 26px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: var(--panel-soft);
+      border: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .mono {
+      font-family: Consolas, "Cascadia Mono", monospace;
+      font-size: 12px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    th,
+    td {
+      border-bottom: 1px solid var(--line);
+      padding: 10px 8px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      color: var(--muted);
+      font-weight: 600;
+      background: #fbfcfe;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+    .table-wrap {
+      max-height: 520px;
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+    .job-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      min-width: 190px;
+    }
+    .job-actions button,
+    .job-actions a.button {
+      min-height: 30px;
+      padding: 5px 8px;
+      font-size: 12px;
+    }
+    pre {
+      margin: 0;
+      min-height: 260px;
+      max-height: 520px;
+      overflow: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+      background: #0f172a;
+      color: #e5e7eb;
+      border-radius: 8px;
+      padding: 12px;
+      line-height: 1.55;
+      border: 1px solid #1f2937;
+    }
+    .message {
+      min-height: 22px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    @media (max-width: 1100px) {
+      .top-grid,
+      .main-grid,
+      .grid,
+      .grid.two,
+      .grid.three {
+        grid-template-columns: 1fr;
+      }
+      .header-inner {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+    @media (max-width: 720px) {
+      .header-inner,
+      main {
+        width: min(100vw - 20px, 1360px);
+      }
+      section,
+      .status-card {
+        padding: 12px;
+      }
+      .table-wrap {
+        max-height: none;
+      }
+      th,
+      td {
+        min-width: 140px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <div>
+        <h1>拼多多本机自动化控制台</h1>
+        <div class="header-subtitle">上传文件、启动任务、查看日志、导出审核结果都在这里完成。</div>
+      </div>
+      <button id="loginButton" type="button">刷新登录</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="top-grid">
+      <div class="status-card">
+        <div class="card-head">
+          <h3>登录状态</h3>
+          <span id="cookieBadge" class="status {{ 'ok' if cookie.exists and cookie.cookie_count else 'bad' }}">
+            {{ 'Cookie 可用' if cookie.exists and cookie.cookie_count else '未检测到 Cookie' }}
+          </span>
+        </div>
+        <div class="meta-grid">
+          <span>保存时间：<span id="cookieSavedAt">{{ cookie.saved_at or '-' }}</span></span>
+          <span>Cookie 数量：<span id="cookieCount">{{ cookie.cookie_count }}</span></span>
+          <span>Cookie 文件：<span class="mono">{{ cookie.path }}</span></span>
+        </div>
+      </div>
+
+      <div class="status-card">
+        <div class="card-head">
+          <h3>扩展与浏览器</h3>
+          <span id="extensionBadge" class="status {{ 'bad' if extension.errors else ('ok' if extension.exists and extension.default_profile_registered and extension.browser_supported else ('warn' if extension.exists else 'bad')) }}">
+            {% if extension.errors %}
+              环境需处理
+            {% elif extension.exists and extension.default_profile_registered and extension.browser_supported %}
+              扩展已注册
+            {% elif extension.exists %}
+              扩展目录存在
+            {% else %}
+              扩展目录缺失
+            {% endif %}
+          </span>
+        </div>
+        <div class="meta-grid">
+          <span>专用 profile 注册：<span id="extensionRegistered">{{ '是' if extension.default_profile_registered else '否' }}</span></span>
+          <span>任务自动加载：<span id="extensionAutoLoad">{{ '已开启' if extension.auto_load_enabled else '未开启' }}</span></span>
+          <span>启动前重启 profile：<span id="extensionRestart">{{ '已开启' if extension.restart_before_launch_enabled else '未开启' }}</span></span>
+          <span>浏览器：<span id="extensionBrowser" class="mono">{{ extension.browser_path or '系统默认 Chrome' }}</span></span>
+          <span>浏览器版本：<span id="extensionBrowserVersion" class="mono">{{ extension.browser_version or '-' }}</span></span>
+          <span>扩展路径：<span id="extensionPath" class="mono">{{ extension.path }}</span></span>
+          <span>环境提示：<span id="extensionMessages">{{ (extension.errors + extension.warnings)|join('；') if extension.errors or extension.warnings else '-' }}</span></span>
+        </div>
+      </div>
+
+      <div class="status-card">
+        <div class="card-head">
+          <h3>部署环境</h3>
+          <span class="status warn">单任务模式</span>
+        </div>
+        <div class="meta-grid">
+          <span>配置文件：<span id="configFile" class="mono">{{ extension.config_file }}</span></span>
+          <span>数据目录：<span id="dataDir" class="mono">{{ extension.data_dir }}</span></span>
+          <span>Cookie 路径：<span id="cookiePath" class="mono">{{ extension.cookie_path }}</span></span>
+          <span>浏览器目录：<span class="mono" id="profilePath">{{ extension.profile_path }}</span></span>
+          <span>完整任务最大并行：1</span>
+          <span>旧数据提示：<span id="legacyStatus">{{ '检测到旧数据' if extension.legacy_cookie_exists or extension.legacy_profile_exists else '无' }}</span></span>
+        </div>
+      </div>
+    </div>
+
+    <pre id="loginLog" style="display:none;"></pre>
+
+    <div class="main-grid">
+      <form id="jobForm" class="form-stack">
+        <section>
+          <div class="section-head">
+            <h2>任务参数</h2>
+            <div class="message" id="jobMessage"></div>
+          </div>
+          <div class="grid two">
+            <label>Excel 商品文件
+              <span class="field-stack">
+                <select name="existing_excel_id">
+                  <option value="">选择历史 Excel，或上传新文件</option>
+                  {% for item in uploads.excel %}
+                    <option value="{{ item.id }}">{{ item.original_name }} · {{ item.last_used_at or item.created_at }}</option>
+                  {% endfor %}
+                </select>
+                <input name="excel_file" type="file" accept=".xlsx">
+                <span class="hint">上传新文件会保存到历史，并优先使用新文件。</span>
+              </span>
+            </label>
+            <label>限量金额
+              <input name="flash_sale_amount" value="{{ settings.flash_sale_amount }}" required>
+            </label>
+            <label>替换图片 1
+              <span class="field-stack">
+                <select name="existing_image_1_id">
+                  <option value="">选择历史图片，或上传新图片</option>
+                  {% for item in uploads.images %}
+                    <option value="{{ item.id }}">{{ item.original_name }} · {{ item.last_used_at or item.created_at }}</option>
+                  {% endfor %}
+                </select>
+                <input name="image_file_1" type="file" accept=".jpg,.jpeg,.png,.webp">
+              </span>
+            </label>
+            <label>替换图片 2
+              <span class="field-stack">
+                <select name="existing_image_2_id">
+                  <option value="">选择历史图片，或上传新图片</option>
+                  {% for item in uploads.images %}
+                    <option value="{{ item.id }}">{{ item.original_name }} · {{ item.last_used_at or item.created_at }}</option>
+                  {% endfor %}
+                </select>
+                <input name="image_file_2" type="file" accept=".jpg,.jpeg,.png,.webp">
+              </span>
+            </label>
+            <label>原文内容
+              <input name="text_to_find" value="{{ settings.text_to_find }}" required>
+            </label>
+            <label>新文内容
+              <input name="text_to_replace" value="{{ settings.text_to_replace }}" required>
+            </label>
+            <label>浏览器目录
+              <input name="browser_profile_mode" type="hidden" value="shared">
+              <div class="static-field">固定专用目录：{{ extension.profile_path }}</div>
+            </label>
+            <label>完整任务最大并行
+              <input name="max_parallel_jobs" type="hidden" value="1">
+              <div class="static-field">固定为 1</div>
+            </label>
+          </div>
+        </section>
+
+        <section>
+          <div class="section-head">
+            <h2>批处理参数</h2>
+            <span class="notice">这些参数会自动记住，下次打开页面继续使用。</span>
+          </div>
+          <div class="grid">
+            <label>每组条数
+              <input name="max_batch_size" type="number" min="1" value="{{ settings.max_batch_size }}" required>
+            </label>
+            <label>任务内 worker 并发
+              <input name="concurrency" type="number" min="1" value="{{ settings.concurrency }}" required>
+            </label>
+            <label>审核超时（秒）
+              <input name="review_timeout" type="number" min="1" value="{{ settings.review_timeout }}" required>
+            </label>
+            <label>页面默认超时（秒）
+              <input name="default_timeout" type="number" min="1" value="{{ settings.default_timeout }}" required>
+            </label>
+            <label>轮询间隔（秒）
+              <input name="poll_interval" type="number" min="1" value="{{ settings.poll_interval }}" required>
+            </label>
+            <label>插件重试次数
+              <input name="plugin_ready_retry_times" type="number" min="1" value="{{ settings.plugin_ready_retry_times }}" required>
+            </label>
+            <label>插件重试间隔（秒）
+              <input name="plugin_ready_retry_interval" type="number" min="1" value="{{ settings.plugin_ready_retry_interval }}" required>
+            </label>
+            <label>搜索结果重试次数
+              <input name="search_result_retry_times" type="number" min="1" value="{{ settings.search_result_retry_times }}" required>
+            </label>
+            <label>搜索结果重试间隔（秒）
+              <input name="search_result_retry_interval" type="number" min="1" value="{{ settings.search_result_retry_interval }}" required>
+            </label>
+            <label>批量操作重试次数
+              <input name="bulk_action_retry_times" type="number" min="1" value="{{ settings.bulk_action_retry_times }}" required>
+            </label>
+            <label>批量操作重试间隔（秒）
+              <input name="bulk_action_retry_interval" type="number" min="1" value="{{ settings.bulk_action_retry_interval }}" required>
+            </label>
+            <label>勾选重试次数
+              <input name="select_all_retry_times" type="number" min="1" value="{{ settings.select_all_retry_times }}" required>
+            </label>
+            <label>勾选重试间隔（秒）
+              <input name="select_all_retry_interval" type="number" min="1" value="{{ settings.select_all_retry_interval }}" required>
+            </label>
+            <label>恢复弹窗重试次数
+              <input name="restore_dialog_retry_times" type="number" min="1" value="{{ settings.restore_dialog_retry_times }}" required>
+            </label>
+            <label>恢复弹窗重试间隔（秒）
+              <input name="restore_dialog_retry_interval" type="number" min="1" value="{{ settings.restore_dialog_retry_interval }}" required>
+            </label>
+          </div>
+          <div class="actions">
+            <button id="startButton" type="submit">启动任务</button>
+          </div>
+        </section>
+      </form>
+
+      <div class="side-stack">
+        <section>
+          <div class="section-head">
+            <h2>任务历史</h2>
+            <span class="notice">每个任务可导出审核通过、未通过或全部结果。</span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>任务</th>
+                  <th>状态</th>
+                  <th>结果摘要</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="jobsBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section>
+          <div class="section-head">
+            <h2>运行日志</h2>
+            <span class="notice" id="selectedJobText">未选择任务</span>
+          </div>
+          <pre id="jobLog"></pre>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const jobForm = document.getElementById('jobForm');
+    const startButton = document.getElementById('startButton');
+    const loginButton = document.getElementById('loginButton');
+    const loginLog = document.getElementById('loginLog');
+    const jobsBody = document.getElementById('jobsBody');
+    const jobLog = document.getElementById('jobLog');
+    const selectedJobText = document.getElementById('selectedJobText');
+    const jobMessage = document.getElementById('jobMessage');
+    let currentEvents = null;
+    let selectedJobId = localStorage.getItem('selectedJobId') || '';
+
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>"']/g, (ch) => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+      }[ch]));
+    }
+
+    function badgeClass(status) {
+      if (status === 'completed') return 'status ok';
+      if (status === 'failed' || status === 'stopped' || status === 'interrupted') return 'status bad';
+      if (status === 'running' || status === 'pending' || status === 'paused' || status === 'stopping') return 'status warn';
+      return 'status';
+    }
+
+    function exportButton(jobId, mode, label, className = 'secondary') {
+      return `<a class="button ${className}" href="/api/jobs/${encodeURIComponent(jobId)}/export?mode=${mode}">${label}</a>`;
+    }
+
+    function actionButtons(job) {
+      const jobId = escapeHtml(job.job_id);
+      const buttons = [
+        `<button class="secondary" type="button" data-action="log" data-job="${jobId}">日志</button>`,
+        exportButton(job.job_id, 'failed', '导出不通过', 'danger'),
+        exportButton(job.job_id, 'passed', '导出成功'),
+        exportButton(job.job_id, 'all', '导出全部')
+      ];
+      if (job.status === 'running') {
+        buttons.push(`<button class="secondary" type="button" data-action="pause" data-job="${jobId}">暂停</button>`);
+        buttons.push(`<button class="secondary" type="button" data-action="stop" data-job="${jobId}">停止</button>`);
+      } else if (job.status === 'paused') {
+        buttons.push(`<button class="secondary" type="button" data-action="resume" data-job="${jobId}">继续</button>`);
+        buttons.push(`<button class="secondary" type="button" data-action="stop" data-job="${jobId}">停止</button>`);
+      }
+      return buttons.join(' ');
+    }
+
+    function summaryPills(summary) {
+      return `
+        <div class="summary-row">
+          <span class="summary-pill">审核 ${escapeHtml(summary.review_total || 0)}</span>
+          <span class="summary-pill ok">成功 ${escapeHtml(summary.review_passed || 0)}</span>
+          <span class="summary-pill bad">不通过 ${escapeHtml(summary.review_failed || 0)}</span>
+          <span class="summary-pill">恢复 ${escapeHtml(summary.restore_total || 0)}</span>
+        </div>
+      `;
+    }
+
+    async function refreshLogin() {
+      const response = await fetch('/api/login/status');
+      const data = await response.json();
+      const cookie = data.cookie || {};
+      document.getElementById('cookieBadge').className =
+        cookie.exists && cookie.cookie_count ? 'status ok' : 'status bad';
+      document.getElementById('cookieBadge').textContent =
+        cookie.exists && cookie.cookie_count ? 'Cookie 可用' : '未检测到 Cookie';
+      document.getElementById('cookieSavedAt').textContent = cookie.saved_at || '-';
+      document.getElementById('cookieCount').textContent = cookie.cookie_count || 0;
+
+      const extension = data.extension || {};
+      const extensionBadge = document.getElementById('extensionBadge');
+      if (extension.errors && extension.errors.length) {
+        extensionBadge.className = 'status bad';
+        extensionBadge.textContent = '环境需处理';
+      } else if (extension.exists && extension.default_profile_registered && extension.browser_supported) {
+        extensionBadge.className = 'status ok';
+        extensionBadge.textContent = '扩展已注册';
+      } else if (extension.exists) {
+        extensionBadge.className = 'status warn';
+        extensionBadge.textContent = '扩展目录存在';
+      } else {
+        extensionBadge.className = 'status bad';
+        extensionBadge.textContent = '扩展目录缺失';
+      }
+      document.getElementById('extensionRegistered').textContent = extension.default_profile_registered ? '是' : '否';
+      document.getElementById('extensionAutoLoad').textContent = extension.auto_load_enabled ? '已开启' : '未开启';
+      document.getElementById('extensionRestart').textContent = extension.restart_before_launch_enabled ? '已开启' : '未开启';
+      document.getElementById('extensionBrowser').textContent = extension.browser_path || '系统默认 Chrome';
+      document.getElementById('extensionBrowserVersion').textContent = extension.browser_version || '-';
+      document.getElementById('extensionPath').textContent = extension.path || '-';
+      document.getElementById('extensionMessages').textContent =
+        [...(extension.errors || []), ...(extension.warnings || [])].join('；') || '-';
+      document.getElementById('configFile').textContent = extension.config_file || '-';
+      document.getElementById('dataDir').textContent = extension.data_dir || '-';
+      document.getElementById('cookiePath').textContent = extension.cookie_path || '-';
+      document.getElementById('profilePath').textContent = extension.profile_path || '-';
+      document.getElementById('legacyStatus').textContent =
+        extension.legacy_cookie_exists || extension.legacy_profile_exists ? '检测到旧数据' : '无';
+      loginButton.disabled = data.status === 'running';
+
+      if (data.logs && data.logs.length) {
+        loginLog.style.display = 'block';
+        loginLog.textContent = data.logs.join('\n');
+        loginLog.scrollTop = loginLog.scrollHeight;
+      }
+    }
+
+    async function refreshJobs() {
+      const response = await fetch('/api/jobs');
+      const data = await response.json();
+      const jobs = data.jobs || [];
+      jobsBody.innerHTML = jobs.map((job) => {
+        const summary = job.summary || {};
+        const resultSummary = job.result_summary || {};
+        const jobId = escapeHtml(job.job_id);
+        return `<tr>
+          <td>
+            <div class="mono">${jobId}</div>
+            <div class="notice">${escapeHtml(job.created_at || '')}</div>
+            <div class="notice">每组 ${escapeHtml(summary.max_batch_size)}，worker ${escapeHtml(summary.concurrency)}，审核 ${escapeHtml(summary.review_timeout)} 秒</div>
+          </td>
+          <td><span class="${badgeClass(job.status)}">${escapeHtml(job.status)}</span></td>
+          <td>${summaryPills(resultSummary)}</td>
+          <td><div class="job-actions">${actionButtons(job)}</div></td>
+        </tr>`;
+      }).join('') || '<tr><td colspan="4" class="notice">暂无任务</td></tr>';
+
+      document.querySelectorAll('[data-action][data-job]').forEach((button) => {
+        button.addEventListener('click', () => handleJobAction(button.dataset.job, button.dataset.action));
+      });
+      if (selectedJobId && jobs.some((job) => job.job_id === selectedJobId) && !jobLog.textContent) {
+        selectJob(selectedJobId);
+      }
+    }
+
+    async function selectJob(jobId) {
+      if (currentEvents) currentEvents.close();
+      selectedJobId = jobId;
+      localStorage.setItem('selectedJobId', jobId);
+      const response = await fetch(`/api/jobs/${encodeURIComponent(jobId)}`);
+      const data = await response.json();
+      selectedJobText.textContent = `当前任务：${jobId}`;
+      jobLog.textContent = (data.logs || []).join('\n');
+      jobLog.scrollTop = jobLog.scrollHeight;
+      const status = data.job && data.job.status;
+      if (status === 'running' || status === 'pending' || status === 'paused' || status === 'stopping') {
+        const fromIndex = data.log_count || (data.logs || []).length;
+        currentEvents = new EventSource(`/api/jobs/${encodeURIComponent(jobId)}/events?from_index=${fromIndex}`);
+        currentEvents.onmessage = (event) => {
+          const payload = JSON.parse(event.data);
+          jobLog.textContent += (jobLog.textContent ? '\n' : '') + payload.line;
+          jobLog.scrollTop = jobLog.scrollHeight;
+        };
+        currentEvents.addEventListener('done', () => {
+          currentEvents.close();
+          currentEvents = null;
+          refreshJobs();
+        });
+      }
+    }
+
+    async function handleJobAction(jobId, action) {
+      if (action === 'log') {
+        await selectJob(jobId);
+        return;
+      }
+      const labels = { pause: '暂停', resume: '继续', stop: '停止' };
+      const response = await fetch(`/api/jobs/${encodeURIComponent(jobId)}/${action}`, { method: 'POST' });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        alert(data.detail || `${labels[action] || '操作'}失败`);
+        return;
+      }
+      await refreshJobs();
+      await selectJob(jobId);
+    }
+
+    loginButton.addEventListener('click', async () => {
+      loginButton.disabled = true;
+      const response = await fetch('/login/start', { method: 'POST' });
+      if (!response.ok) {
+        const data = await response.json();
+        alert(data.detail || '登录流程启动失败');
+      }
+      await refreshLogin();
+    });
+
+    jobForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      startButton.disabled = true;
+      jobMessage.textContent = '正在提交任务...';
+      const response = await fetch('/jobs', { method: 'POST', body: new FormData(jobForm) });
+      const data = await response.json().catch(() => ({}));
+      startButton.disabled = false;
+      if (!response.ok) {
+        jobMessage.textContent = data.detail || '任务启动失败';
+        return;
+      }
+      jobMessage.textContent = `任务已启动：${data.job_id}`;
+      await refreshJobs();
+      await selectJob(data.job_id);
+    });
+
+    refreshLogin();
+    refreshJobs();
+    setInterval(refreshLogin, 2500);
+    setInterval(refreshJobs, 3000);
+  </script>
+</body>
+</html>

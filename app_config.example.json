@@ -1,0 +1,10 @@
+{
+  "browser_path": "browsers/chromium/chrome-win64/chrome.exe",
+  "extension_dir": "extensions/fuduo_3_1_27",
+  "data_dir": "data",
+  "user_data_dir": "data/chrome_user_data",
+  "cookie_file": "data/pdd_cookies.json",
+  "runs_dir": "data/runs",
+  "uploads_dir": "data/uploads",
+  "state_file": "data/web_state.json"
+}
