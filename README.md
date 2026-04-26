@@ -24,6 +24,22 @@ http://127.0.0.1:8000
 
 完整的新电脑部署、配置迁移、浏览器/扩展准备、常见问题处理见 [DEPLOY.md](DEPLOY.md)。
 
+## 打包 EXE
+
+在 Windows 上执行：
+
+```powershell
+python build_exe.py
+```
+
+生成目录：
+
+```text
+dist/PDDConsole/PDDConsole.exe
+```
+
+把整个 `dist/PDDConsole` 文件夹复制到其他电脑，双击 `PDDConsole.exe` 即可启动。
+
 ## 默认目录
 
 - 浏览器：`browsers/chromium/chrome-win64/chrome.exe`

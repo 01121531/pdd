@@ -2,19 +2,44 @@ import json
 import os
 import re
 import subprocess
+import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
 
-BASE_DIR = Path(__file__).parent
+def is_frozen_app() -> bool:
+    return bool(getattr(sys, 'frozen', False))
 
 
-def resolve_path(value: str | Path, base_dir: Path = BASE_DIR) -> Path:
+def app_dir() -> Path:
+    if is_frozen_app():
+        return Path(sys.executable).resolve().parent
+    return Path(__file__).resolve().parent
+
+
+def resource_dir() -> Path:
+    return Path(getattr(sys, '_MEIPASS', app_dir())).resolve()
+
+
+BASE_DIR = app_dir()
+RESOURCE_DIR = resource_dir()
+
+
+def resolve_path(value: str | Path, base_dir: Path = BASE_DIR, fallback_base: Path | None = None) -> Path:
     path = Path(os.path.expandvars(str(value))).expanduser()
-    if not path.is_absolute():
-        path = base_dir / path
-    return path
+    if path.is_absolute():
+        return path
+    resolved = base_dir / path
+    if fallback_base:
+        fallback = fallback_base / path
+        if not resolved.exists() and fallback.exists():
+            return fallback
+    return resolved
+
+
+def resolve_resource_path(value: str | Path) -> Path:
+    return resolve_path(value, base_dir=BASE_DIR, fallback_base=RESOURCE_DIR)
 
 
 def config_file_path() -> Path:
@@ -108,6 +133,7 @@ def is_unsupported_system_chrome(browser_path: Path | None, version_text: str) -
 @dataclass(slots=True)
 class AppConfig:
     base_dir: Path
+    resource_dir: Path
     config_file: Path
     browser_path: Path | None
     extension_dir: Path
@@ -157,23 +183,23 @@ def load_app_config() -> AppConfig:
 
     env_extension = os.environ.get('PDD_EXTENSION_DIR')
     if env_extension:
-        extension_dir = resolve_path(env_extension)
+        extension_dir = resolve_resource_path(env_extension)
         sources['extension_dir'] = 'env:PDD_EXTENSION_DIR'
     elif raw.get('extension_dir'):
-        extension_dir = resolve_path(raw['extension_dir'])
+        extension_dir = resolve_resource_path(raw['extension_dir'])
         sources['extension_dir'] = str(cfg_file)
     else:
-        extension_dir = BASE_DIR / 'extensions' / 'fuduo_3_1_27'
+        extension_dir = RESOURCE_DIR / 'extensions' / 'fuduo_3_1_27'
         sources['extension_dir'] = 'default'
 
     env_browser = os.environ.get('PDD_BROWSER_PATH')
-    bundled_browser = BASE_DIR / 'browsers' / 'chromium' / 'chrome-win64' / 'chrome.exe'
+    bundled_browser = RESOURCE_DIR / 'browsers' / 'chromium' / 'chrome-win64' / 'chrome.exe'
     browser_path: Path | None
     if env_browser:
-        browser_path = resolve_path(env_browser)
+        browser_path = resolve_resource_path(env_browser)
         sources['browser_path'] = 'env:PDD_BROWSER_PATH'
     elif raw.get('browser_path'):
-        browser_path = resolve_path(raw['browser_path'])
+        browser_path = resolve_resource_path(raw['browser_path'])
         sources['browser_path'] = str(cfg_file)
     elif bundled_browser.exists():
         browser_path = bundled_browser
@@ -221,6 +247,7 @@ def load_app_config() -> AppConfig:
 
     return AppConfig(
         base_dir=BASE_DIR,
+        resource_dir=RESOURCE_DIR,
         config_file=cfg_file,
         browser_path=browser_path,
         extension_dir=extension_dir,

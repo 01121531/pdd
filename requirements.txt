@@ -3,5 +3,6 @@ fastapi
 jinja2
 openpyxl
 psutil
+pyinstaller
 python-multipart
 uvicorn[standard]

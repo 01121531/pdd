@@ -25,13 +25,14 @@ from fastapi.templating import Jinja2Templates
 from app_config import APP_CONFIG
 
 BASE_DIR = APP_CONFIG.base_dir
+RESOURCE_DIR = APP_CONFIG.resource_dir
 RUNS_DIR = APP_CONFIG.runs_dir
 UPLOADS_DIR = APP_CONFIG.uploads_dir
 STATE_FILE = APP_CONFIG.state_file
 COOKIE_FILE = APP_CONFIG.cookie_file
-OPEN_SCRIPT = BASE_DIR / 'open_pdd_goods.py'
-LOGIN_SCRIPT = BASE_DIR / 'save_pdd_cookie.py'
-TEMPLATES_DIR = BASE_DIR / 'templates'
+OPEN_SCRIPT = RESOURCE_DIR / 'open_pdd_goods.py'
+LOGIN_SCRIPT = RESOURCE_DIR / 'save_pdd_cookie.py'
+TEMPLATES_DIR = RESOURCE_DIR / 'templates'
 EXTENSION_DIR = APP_CONFIG.extension_dir
 DEFAULT_USER_DATA_DIR = APP_CONFIG.user_data_dir
 BROWSER_PATH = APP_CONFIG.browser_path
@@ -73,6 +74,17 @@ login_runtime: dict[str, Any] = {
     'ended_at': None,
     'returncode': None,
 }
+
+
+def is_packaged_app() -> bool:
+    return bool(getattr(sys, 'frozen', False))
+
+
+def worker_command(worker: str, args: list[str]) -> list[str]:
+    if is_packaged_app():
+        return [sys.executable, '--worker', worker, *args]
+    script = OPEN_SCRIPT if worker == 'open' else LOGIN_SCRIPT
+    return [sys.executable, '-u', str(script), *args]
 
 
 def now_iso() -> str:
@@ -127,7 +139,7 @@ def job_process_alive(job: dict[str, Any]) -> bool:
         return False
     for process in psutil.process_iter(['cmdline']):
         cmdline = ' '.join(process.info.get('cmdline') or [])
-        if 'open_pdd_goods.py' in cmdline and job_id in cmdline:
+        if job_id in cmdline and ('open_pdd_goods.py' in cmdline or '--worker open' in cmdline):
             return True
     return False
 
@@ -617,9 +629,10 @@ def read_job_logs(job: dict[str, Any]) -> list[str]:
 
 
 def run_job_process(job_id: str, config_file: Path) -> None:
-    command = [sys.executable, '-u', str(OPEN_SCRIPT), '--config', str(config_file)]
+    command = worker_command('open', ['--config', str(config_file)])
     env = os.environ.copy()
     env['PYTHONIOENCODING'] = 'utf-8'
+    env['PYTHONUNBUFFERED'] = '1'
     creationflags = getattr(subprocess, 'CREATE_NO_WINDOW', 0)
     config_payload = json.loads(config_file.read_text(encoding='utf-8'))
 
@@ -680,21 +693,19 @@ def append_login_log(line: str) -> None:
 
 def run_login_process() -> None:
     debug_port = find_free_port()
-    command = [
-        sys.executable,
-        '-u',
-        str(LOGIN_SCRIPT),
+    command = worker_command('login', [
         '--output',
         str(COOKIE_FILE),
         '--user-data-dir',
         str(DEFAULT_USER_DATA_DIR),
         '--debug-port',
         str(debug_port),
-    ]
+    ])
     if BROWSER_PATH:
         command.extend(['--browser-path', str(BROWSER_PATH)])
     env = os.environ.copy()
     env['PYTHONIOENCODING'] = 'utf-8'
+    env['PYTHONUNBUFFERED'] = '1'
     creationflags = getattr(subprocess, 'CREATE_NO_WINDOW', 0)
 
     with runtime_lock:

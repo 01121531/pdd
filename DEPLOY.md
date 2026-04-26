@@ -34,6 +34,32 @@ git lfs pull
 
 `git lfs pull` 会拉取随包 Chromium 的大文件。如果跳过这一步，`browsers/chromium/chrome-win64/chrome.exe` 可能只是一个很小的 LFS 指针文件，浏览器无法启动。
 
+## 免安装 EXE 部署
+
+如果已经拿到打包后的 `PDDConsole` 文件夹，不需要安装 Python，也不需要执行 `pip install`。
+
+使用方式：
+
+1. 把整个 `PDDConsole` 文件夹复制到目标电脑。
+2. 双击 `PDDConsole.exe`。
+3. 程序会自动打开 `http://127.0.0.1:8000` 或附近可用端口。
+4. 首次使用点击“刷新登录”扫码。
+
+注意：不要只复制 `PDDConsole.exe` 单个文件。随包 Chromium、扩展和 Python 运行库都在同一个发布文件夹内，必须一起带走。
+
+如果需要自己重新打包，在源码目录执行：
+
+```powershell
+pip install -r requirements.txt
+python build_exe.py
+```
+
+生成目录：
+
+```text
+dist/PDDConsole/
+```
+
 ## 3. 安装 Python 依赖
 
 建议使用虚拟环境：
