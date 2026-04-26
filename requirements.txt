@@ -1,0 +1,7 @@
+DrissionPage
+fastapi
+jinja2
+openpyxl
+psutil
+python-multipart
+uvicorn[standard]
